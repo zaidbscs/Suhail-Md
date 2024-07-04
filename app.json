@@ -57,7 +57,7 @@
     "MSGS_IN_LOG": {
       "description": "Fill the value -true- if you want to see Messages in logs.",
       "required" :false,
-      "value": "false"
+      "value": "true"
     },
     "PREFIX": {
       "description": "Enter your desired prefix for bot. you can set `all | . | .!*`",
