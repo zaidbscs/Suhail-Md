@@ -33,5 +33,20 @@ jobs:
       if: cancelled()
       run: |
         echo "Deleting cancelled workflow runs"
-        curl -X DELETE -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        response=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}")
+        
+        if [ "$response" -eq 204 ]; then
+          echo "Successfully deleted the cancelled workflow run."
+        else
+          echo "Failed to delete the cancelled workflow run. HTTP status: $response"
+        fi
+
+    - name: Check for curl errors
+      if: always()
+      run: |
+        if [ $? -ne 0 ]; then
+          echo "An error occurred during the delete request"
+          exit 1
+        fi
+
