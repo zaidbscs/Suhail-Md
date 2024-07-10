@@ -21,4 +21,3 @@ jobs:
       with:
         workflow: deploy.yml
         token: ${{ secrets.GITHUB_TOKEN }}
-        
