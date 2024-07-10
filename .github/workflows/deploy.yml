@@ -1,10 +1,7 @@
 name: Deploy
 
 on:
-  workflow_dispatch:
-
-permissions:
-  actions: write  # Add this to allow deleting workflow runs
+  workflow_dispatch: # Allows manual triggering of the workflow
 
 concurrency:
   group: deploy
@@ -12,7 +9,12 @@ concurrency:
 
 jobs:
   deploy:
+
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x]
 
     steps:
     - name: Checkout repository
@@ -21,32 +23,10 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '20.x'
+        node-version: ${{ matrix.node-version }}
 
     - name: Install dependencies
       run: npm install
 
     - name: Start application
       run: npm start
-
-    - name: Delete cancelled workflow runs
-      if: cancelled()
-      run: |
-        echo "Deleting cancelled workflow runs"
-        response=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}")
-        
-        if [ "$response" -eq 204 ]; then
-          echo "Successfully deleted the cancelled workflow run."
-        else
-          echo "Failed to delete the cancelled workflow run. HTTP status: $response"
-        fi
-
-    - name: Check for curl errors
-      if: always()
-      run: |
-        if [ $? -ne 0 ]; then
-          echo "An error occurred during the delete request"
-          exit 1
-        fi
-
